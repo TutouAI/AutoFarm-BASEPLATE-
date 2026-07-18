@@ -6,19 +6,32 @@ Players.RespawnTime = 0
 local resetAtivo = false
 local teleportado = false
 local destino = Vector3.new(5, -117, -27)
-local delayTeleport = 0.5
+local delayReset = 0.5
+local part
 
-local part = Instance.new("Part")
-part.Size = Vector3.new(289.705, 1, 562.193)
-part.Position = Vector3.new(-4.034, -120, 36.121)
-part.Anchored = true
-part.CanCollide = true
-part.Color = Color3.fromRGB(236, 237, 241)
-part.Parent = workspace
+local function criarPart()
+    if not part or not part.Parent then
+        part = Instance.new("Part")
+        part.Size = Vector3.new(289.705, 1, 562.193)
+        part.Position = Vector3.new(-4.034, -120, 36.121)
+        part.Anchored = true
+        part.CanCollide = true
+        part.Color = Color3.fromRGB(236, 237, 241)
+        part.Parent = workspace
+    end
+end
+
+local function removerPart()
+    if part and part.Parent then
+        part:Destroy()
+        part = nil
+    end
+end
 
 local function resetar()
     if resetAtivo and teleportado then
         if player.Character and player.Character:FindFirstChild("Humanoid") then
+            task.wait(delayReset)
             player.Character.Humanoid.Health = 0
         end
     end
@@ -27,7 +40,7 @@ end
 local function tentarTeleportar()
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character:MoveTo(destino)
-        task.wait(delayTeleport)
+        task.wait(0.5)
         local pos = player.Character.HumanoidRootPart.Position
         if (pos - destino).Magnitude < 5 then
             teleportado = true
@@ -55,12 +68,15 @@ end)
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Auto Reset + Part",
+    Name = "AutoFarm Baseplate - Simples",
     LoadingTitle = "Rayfield Interface",
     LoadingSubtitle = "by Tutou",
     ConfigurationSaving = {
-        Enabled = false
-    }
+        Enabled = true,
+        FolderName = "AutoFarmBaseplate",
+        FileName = "Config"
+    },
+    KeySystem = false
 })
 
 local Tab = Window:CreateTab("Funções", 4483362458)
@@ -80,28 +96,28 @@ local Toggle = Tab:CreateToggle({
     end,
 })
 
-local Button = Tab:CreateButton({
-    Name = "Criar Part",
-    Callback = function()
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(289.705, 1, 562.193)
-        part.Position = Vector3.new(-4.034, -120, 36.121)
-        part.Anchored = true
-        part.CanCollide = true
-        part.Color = Color3.fromRGB(236, 237, 241)
-        part.Parent = workspace
+local TogglePart = Tab:CreateToggle({
+    Name = "Ativar/Desativar Part",
+    CurrentValue = true,
+    Flag = "PartToggle",
+    Callback = function(Value)
+        if Value then
+            criarPart()
+        else
+            removerPart()
+        end
     end,
 })
 
 local Slider = Tab:CreateSlider({
-    Name = "Delay para Teleportar",
+    Name = "Delay para Reset",
     Range = {0.2, 2},
     Increment = 0.1,
     Suffix = "s",
     CurrentValue = 0.5,
     Flag = "DelaySlider",
     Callback = function(Value)
-        delayTeleport = Value
+        delayReset = Value
     end,
 })
 
@@ -113,3 +129,24 @@ RunService.RenderStepped:Connect(function()
         PositionLabel:Set("Posição: X="..math.floor(pos.X).." | Y="..math.floor(pos.Y).." | Z="..math.floor(pos.Z))
     end
 end)
+
+Window:CreateKeybind({
+    Name = "Abrir/Fechar Interface",
+    CurrentKeybind = "RightShift",
+    Flag = "UIKeybind",
+    Callback = function()
+        Window:Toggle()
+    end,
+})
+
+Tab:CreateButton({
+    Name = "Deletar Funções",
+    Callback = function()
+        resetAtivo = false
+        teleportado = false
+        removerPart()
+        if Window then
+            Window:Destroy()
+        end
+    end,
+})
