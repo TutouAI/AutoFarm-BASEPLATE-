@@ -75,13 +75,13 @@ local Window = Rayfield:CreateWindow({
         Enabled = true,
         FolderName = "AutoFarmBaseplate",
         FileName = "Config"
-    },
-    KeySystem = false
+    }
 })
 
-local Tab = Window:CreateTab("Funções", 4483362458)
+local TabFuncoes = Window:CreateTab("Funções", 4483362458)
+local TabConfig = Window:CreateTab("Configurações", 4483362458)
 
-local Toggle = Tab:CreateToggle({
+local Toggle = TabFuncoes:CreateToggle({
     Name = "Reset Automático (junto com TP)",
     CurrentValue = false,
     Flag = "ResetToggle",
@@ -96,7 +96,7 @@ local Toggle = Tab:CreateToggle({
     end,
 })
 
-local TogglePart = Tab:CreateToggle({
+local TogglePart = TabFuncoes:CreateToggle({
     Name = "Ativar/Desativar Part",
     CurrentValue = true,
     Flag = "PartToggle",
@@ -109,7 +109,7 @@ local TogglePart = Tab:CreateToggle({
     end,
 })
 
-local Slider = Tab:CreateSlider({
+local Slider = TabConfig:CreateSlider({
     Name = "Delay para Reset",
     Range = {0.2, 2},
     Increment = 0.1,
@@ -121,7 +121,7 @@ local Slider = Tab:CreateSlider({
     end,
 })
 
-local PositionLabel = Tab:CreateLabel("Posição: X=0 | Y=0 | Z=0")
+local PositionLabel = TabConfig:CreateLabel("Posição: X=0 | Y=0 | Z=0")
 
 RunService.RenderStepped:Connect(function()
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -139,7 +139,7 @@ Window:CreateKeybind({
     end,
 })
 
-Tab:CreateButton({
+TabConfig:CreateButton({
     Name = "Deletar Funções",
     Callback = function()
         resetAtivo = false
