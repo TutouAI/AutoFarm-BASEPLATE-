@@ -1,0 +1,115 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+Players.RespawnTime = 0
+
+local resetAtivo = false
+local teleportado = false
+local destino = Vector3.new(5, -117, -27)
+local delayTeleport = 0.5
+
+local part = Instance.new("Part")
+part.Size = Vector3.new(289.705, 1, 562.193)
+part.Position = Vector3.new(-4.034, -120, 36.121)
+part.Anchored = true
+part.CanCollide = true
+part.Color = Color3.fromRGB(236, 237, 241)
+part.Parent = workspace
+
+local function resetar()
+    if resetAtivo and teleportado then
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.Health = 0
+        end
+    end
+end
+
+local function tentarTeleportar()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character:MoveTo(destino)
+        task.wait(delayTeleport)
+        local pos = player.Character.HumanoidRootPart.Position
+        if (pos - destino).Magnitude < 5 then
+            teleportado = true
+            resetar()
+        else
+            teleportado = false
+            task.wait(0.5)
+            tentarTeleportar()
+        end
+    else
+        teleportado = false
+        task.wait(0.5)
+        tentarTeleportar()
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    if resetAtivo then
+        task.wait(0.1)
+        teleportado = false
+        tentarTeleportar()
+    end
+end)
+
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Auto Reset + Part",
+    LoadingTitle = "Rayfield Interface",
+    LoadingSubtitle = "by Tutou",
+    ConfigurationSaving = {
+        Enabled = false
+    }
+})
+
+local Tab = Window:CreateTab("Funções", 4483362458)
+
+local Toggle = Tab:CreateToggle({
+    Name = "Reset Automático (junto com TP)",
+    CurrentValue = false,
+    Flag = "ResetToggle",
+    Callback = function(Value)
+        resetAtivo = Value
+        if resetAtivo then
+            teleportado = false
+            tentarTeleportar()
+        else
+            teleportado = false
+        end
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Criar Part",
+    Callback = function()
+        local part = Instance.new("Part")
+        part.Size = Vector3.new(289.705, 1, 562.193)
+        part.Position = Vector3.new(-4.034, -120, 36.121)
+        part.Anchored = true
+        part.CanCollide = true
+        part.Color = Color3.fromRGB(236, 237, 241)
+        part.Parent = workspace
+    end,
+})
+
+local Slider = Tab:CreateSlider({
+    Name = "Delay para Teleportar",
+    Range = {0.2, 2},
+    Increment = 0.1,
+    Suffix = "s",
+    CurrentValue = 0.5,
+    Flag = "DelaySlider",
+    Callback = function(Value)
+        delayTeleport = Value
+    end,
+})
+
+local PositionLabel = Tab:CreateLabel("Posição: X=0 | Y=0 | Z=0")
+
+RunService.RenderStepped:Connect(function()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local pos = player.Character.HumanoidRootPart.Position
+        PositionLabel:Set("Posição: X="..math.floor(pos.X).." | Y="..math.floor(pos.Y).." | Z="..math.floor(pos.Z))
+    end
+end)
